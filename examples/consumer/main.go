@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	rabbitmq "github.com/wagslane/go-rabbitmq"
+	rabbitmq "github.com/misu99/go-rabbitmq"
 )
 
 func main() {
-	conn, err := rabbitmq.NewConn(
+	var conn, err = rabbitmq.NewConn(
 		"amqp://guest:guest@localhost",
 		rabbitmq.WithConnectionOptionsLogging,
 	)

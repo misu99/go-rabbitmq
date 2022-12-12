@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	"errors"
 	"fmt"
-	"github.com/wagslane/go-rabbitmq/internal/channelmanager"
+	"github.com/misu99/go-rabbitmq/internal/channelmanager"
 )
 
 // 定义一个Queue
