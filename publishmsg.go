@@ -7,7 +7,7 @@ import (
 
 // Publish publishes the provided data to the given routing keys over the connection
 func (publisher *Publisher) PublishWithMsg(
-	msg amqp.Publishing,
+	msg Delivery,
 	routingKeys []string,
 	optionFuncs ...func(*PublishOptions),
 ) error {
@@ -32,7 +32,22 @@ func (publisher *Publisher) PublishWithMsg(
 	}
 
 	for _, routingKey := range routingKeys {
-		var message = msg
+		var message = amqp.Publishing{
+			Headers:         msg.Headers,
+			ContentType:     msg.ContentType,
+			ContentEncoding: msg.ContentEncoding,
+			DeliveryMode:    msg.DeliveryMode,
+			Priority:        msg.Priority,
+			CorrelationId:   msg.CorrelationId,
+			ReplyTo:         msg.ReplyTo,
+			Expiration:      msg.Expiration,
+			MessageId:       msg.MessageId,
+			Timestamp:       msg.Timestamp,
+			Type:            msg.Type,
+			UserId:          msg.UserId,
+			AppId:           msg.AppId,
+			Body:            msg.Body,
+		}
 
 		// Actual publish.
 		err := publisher.chanManager.PublishSafe(
