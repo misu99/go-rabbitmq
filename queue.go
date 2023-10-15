@@ -7,11 +7,7 @@ import (
 )
 
 // 定义一个Queue
-func NewQueue(
-	conn *Conn,
-	queue string,
-	optionFuncs ...func(*ConsumerOptions),
-) error {
+func NewQueue(conn *Conn, queue string, optionFuncs ...func(*ConsumerOptions)) error {
 	defaultOptions := getDefaultConsumerOptions(queue)
 	options := &defaultOptions
 	for _, optionFunc := range optionFuncs {
@@ -49,4 +45,44 @@ func NewQueue(
 	}
 
 	return nil
+}
+
+// 清空Queue的消息
+func ClearQueue(conn *Conn, queue, msgId string, optionFuncs ...func(*ConsumerOptions)) (int, error) {
+	defaultOptions := getDefaultConsumerOptions(queue)
+	options := &defaultOptions
+	for _, optionFunc := range optionFuncs {
+		optionFunc(options)
+	}
+
+	if conn.connectionManager == nil {
+		return 0, errors.New("connection manager can't be nil")
+	}
+
+	chanManager, err := channelmanager.NewChannelManager(conn.connectionManager, options.Logger, conn.connectionManager.ReconnectInterval)
+	if err != nil {
+		return 0, err
+	}
+
+	return chanManager.QueuePurgeSafe(queue)
+}
+
+// 删除Queue中的消息
+func DeleteQueueMsg(conn *Conn, queue, msgId string, optionFuncs ...func(*ConsumerOptions)) error {
+	defaultOptions := getDefaultConsumerOptions(queue)
+	options := &defaultOptions
+	for _, optionFunc := range optionFuncs {
+		optionFunc(options)
+	}
+
+	if conn.connectionManager == nil {
+		return errors.New("connection manager can't be nil")
+	}
+
+	chanManager, err := channelmanager.NewChannelManager(conn.connectionManager, options.Logger, conn.connectionManager.ReconnectInterval)
+	if err != nil {
+		return err
+	}
+
+	return chanManager.AckMessageSafe(queue, msgId)
 }

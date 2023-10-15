@@ -196,3 +196,37 @@ func (chanManager *ChannelManager) NotifyFlowSafe(
 		c,
 	)
 }
+
+// 从队列中确认消息
+func (chanManager *ChannelManager) AckMessageSafe(queueName, msgId string) error {
+	chanManager.channelMux.RLock()
+	defer chanManager.channelMux.RUnlock()
+
+	msg, ok, err := chanManager.channel.Get(queueName, false)
+	if err != nil {
+		return err
+	}
+
+	for ok {
+		if msg.MessageId == msgId { // 消息id匹配
+			//chanManager.channel.Ack(msg.DeliveryTag, false)
+			chanManager.channel.Nack(msg.DeliveryTag, false, false)
+			break
+		}
+
+		msg, ok, err = chanManager.channel.Get(queueName, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// 清空队列消息
+func (chanManager *ChannelManager) QueuePurgeSafe(queueName string) (int, error) {
+	chanManager.channelMux.RLock()
+	defer chanManager.channelMux.RUnlock()
+
+	return chanManager.channel.QueuePurge(queueName, false)
+}

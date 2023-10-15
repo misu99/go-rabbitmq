@@ -1,11 +1,13 @@
 package rabbitmq
 
+// Publish扩展方法
+
 import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// Publish publishes the provided data to the given routing keys over the connection
+// PublishWithMsg 投递已存在的消息
 func (publisher *Publisher) PublishWithMsg(
 	msg Delivery,
 	routingKeys []string,
