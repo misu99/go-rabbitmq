@@ -244,9 +244,7 @@ func (chanManager *ChannelManager) AckMessagesSafe(queueName string, msgIds []st
 
 	for ok {
 		if find(msgIds, msg.MessageId) { // 消息id匹配
-			//chanManager.channel.Ack(msg.DeliveryTag, false)
 			chanManager.channel.Nack(msg.DeliveryTag, false, false)
-			break
 		}
 
 		msg, ok, err = chanManager.channel.Get(queueName, false)
