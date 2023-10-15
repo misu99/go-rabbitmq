@@ -86,3 +86,23 @@ func DeleteQueueMsg(conn *Conn, queue, msgId string, optionFuncs ...func(*Consum
 
 	return chanManager.AckMessageSafe(queue, msgId)
 }
+
+// 批量删除Queue中的消息
+func DeleteQueueMsgs(conn *Conn, queue string, msgIds []string, optionFuncs ...func(*ConsumerOptions)) error {
+	defaultOptions := getDefaultConsumerOptions(queue)
+	options := &defaultOptions
+	for _, optionFunc := range optionFuncs {
+		optionFunc(options)
+	}
+
+	if conn.connectionManager == nil {
+		return errors.New("connection manager can't be nil")
+	}
+
+	chanManager, err := channelmanager.NewChannelManager(conn.connectionManager, options.Logger, conn.connectionManager.ReconnectInterval)
+	if err != nil {
+		return err
+	}
+
+	return chanManager.AckMessagesSafe(queue, msgIds)
+}

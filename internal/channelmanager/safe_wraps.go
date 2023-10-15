@@ -223,6 +223,41 @@ func (chanManager *ChannelManager) AckMessageSafe(queueName, msgId string) error
 	return nil
 }
 
+// 从队列中批量确认消息
+func (chanManager *ChannelManager) AckMessagesSafe(queueName string, msgIds []string) error {
+	chanManager.channelMux.RLock()
+	defer chanManager.channelMux.RUnlock()
+
+	msg, ok, err := chanManager.channel.Get(queueName, false)
+	if err != nil {
+		return err
+	}
+
+	find := func(source []string, value string) bool {
+		for _, item := range source {
+			if item != "" && value != "" && item == value {
+				return true
+			}
+		}
+		return false
+	}
+
+	for ok {
+		if find(msgIds, msg.MessageId) { // 消息id匹配
+			//chanManager.channel.Ack(msg.DeliveryTag, false)
+			chanManager.channel.Nack(msg.DeliveryTag, false, false)
+			break
+		}
+
+		msg, ok, err = chanManager.channel.Get(queueName, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // 清空队列消息
 func (chanManager *ChannelManager) QueuePurgeSafe(queueName string) (int, error) {
 	chanManager.channelMux.RLock()
